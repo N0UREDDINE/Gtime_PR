@@ -13,7 +13,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(_('The Email must be set'))
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
+        user.set_password(password)  # This will hash the password
         user.save(using=self._db)
         return user
 
@@ -33,21 +33,21 @@ class Role(models.Model):
     SUPERVISOR = 'supervisor'
     EMPLOYEE = 'employee'
 
-    ROLE_CHOICES = [
-        (ADMIN, _('Admin')),
-        (SUPERVISOR, _('Supervisor')),
-        (EMPLOYEE, _('Employee')),
-    ]
+    # ROLE_CHOICES = [
+    #     (ADMIN, _('Admin')),
+    #     (SUPERVISOR, _('Supervisor')),
+    #     (EMPLOYEE, _('Employee')),
+    # ]
 
     name = models.CharField(
         max_length=50,
-        choices=ROLE_CHOICES,
         default=EMPLOYEE,
         unique=True,  # Ensure role names are unique
     )
 
     def __str__(self):
-        return self.get_name_display()
+       return self.name
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model that uses email instead of a username.
@@ -76,8 +76,8 @@ class TimeTrack(models.Model):
     """
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='time_tracks')
     date = models.DateField(auto_now_add=True)
-    login_time = models.DateTimeField()  # Captured at the moment of user login
-    logout_time = models.DateTimeField(blank=True, null=True)  # Captured at the moment of user logout
+    login_time = models.TimeField()  # Captured at the moment of user login
+    logout_time = models.TimeField(blank=True, null=True)  # Captured at the moment of user logout
     service_duration = models.DurationField(blank=True, null=True)  # Calculated duration
     break_duration = models.DurationField(blank=True, null=True)  # Calculated duration
     delay_time = models.DurationField(blank=True, null=True)  # Calculated duration
